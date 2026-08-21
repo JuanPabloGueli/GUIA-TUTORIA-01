@@ -1,0 +1,45 @@
+## 1. Actualizar e instalar MariaDB de forma no interactiva
+sudo apt update
+sudo apt install mariadb-server -y
+
+
+## 2. Iniciar el servicio de base de datos
+sudo service mariadb start
+
+## Si quieres definir una contraseña y limpiar usuarios de prueba, ejecuta:
+
+#sudo mysql_secure_installation
+
+## Tip: Para un entorno de desarrollo rápido, puedes saltarte esto y entrar directamente como root (sudo).
+sudo mariadb
+
+
+Comandos SQL de la guía 01:
+
+--No son necesarios la primera vez.
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'bookstore_user'@'localhost';​
+DROP USER IF EXISTS 'bookstore_user'@'localhost';​
+DROP DATABASE IF EXISTS bookstoredb;​
+FLUSH PRIVILEGES;
+
+--A partir de acá, sí:
+--Crea una base de datos llamada bookstoredb con el cotejamiento utf8_unicode_ci.
+CREATE DATABASE bookstoredb CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+
+--Ahora creamos un usuario llamado bookstore_user con la contraseña 12345 (a los fines prácticos usamos una contraseña insegura y fácil de recordar):
+CREATE USER 'bookstore_user'@'localhost' IDENTIFIED BY '12345';
+
+--Otorgamos todos los permisos sobre la base de datos bookstoredb al usuario bookstore_user:
+GRANT ALL PRIVILEGES ON bookstoredb.* TO 'bookstore_user'@'localhost';
+
+--Para que los cambios surtan efecto, ejecutamos:
+FLUSH PRIVILEGES;
+
+
+--Podemos verificar qué permisos tiene bookstore_user con:
+--SHOW GRANTS FOR 'bookstore_user'@'localhost';
+
+--Esto mostrará algo como:
+--GRANT ALL PRIVILEGES ON `bookstoredb`.* TO 'bookstore_user'@'localhost'
+
