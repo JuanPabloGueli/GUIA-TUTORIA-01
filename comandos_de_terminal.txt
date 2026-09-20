@@ -92,5 +92,20 @@ Para eliminar en cascada hay que modificar la tablas correspondientes de la sigu
 
 
     1 ) sudo service mariadb start / stop
-    2 ) mysql -u bookstore_user -p 
-    3 ) 12345
+    2 ) sudo mariadb
+    3 ) mysql -u bookstore_user -p      
+    4 ) 12345 / Patients123!
+
+
+--------------------- | CONEVENCIONES DE ESCRITURA | ---------------------
+
+● SQL               MAYUSCULAS              SELECT
+● Base de datos     snake_case              medical_clinic
+● Tablas            Plural,snake_case       patients_records
+● Campos            snake_case              patient_id
+● Claves primarias  id o <tabla>_id         id o patient_id
+● Claves foráneas   <tabla>_id              doctor_id 
+
+SELECT User, Host FROM mysql.user;
+SHOW GRANTS FOR 'nombre_usuario'@'localhost';
+

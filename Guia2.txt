@@ -1,0 +1,29 @@
+CREATE DATABASE patientsdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'patients_user'@'localhost' IDENTIFIED BY 'Patients123!';
+GRANT ALL PRIVILEGES ON patientsdb.* TO 'patients_user'@'localhost';
+
+
+CREATE TABLE patients ( 
+id INT PRIMARY KEY AUTO_INCREMENT, 
+first_name VARCHAR(50) NOT NULL, 
+last_name VARCHAR(50) NOT NULL, 
+birth_date DATE NOT NULL, 
+phone VARCHAR(15) UNIQUE NULL,
+email VARCHAR(100) NULL
+);
+
+
+INSERT INTO patients (first_name,last_name,birth_date,phone,email) VALUES ('John','Doe','1995-05-15','123456789','john.doe@email.com');
+INSERT INTO patients (first_name,last_name,birth_date,phone,email) VALUES ('Jane','Smith','1998-08-20','987654321','janesmith@email.com'),('Mike','Brown','1985-12-10','555123456',NULL);
+
+
+SELECT * FROM patients;
+SELECT CONCAT(first_name,' ',last_name) AS 'Nombre Completo', TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) AS 'Edad' FROM patients;
+SELECT CONCAT(first_name,' ',last_name) AS 'Nombre Completo' FROM patients WHERE TIMESTAMPDIFF(YEAR, birth_date, CURDATE()) > 30;
+SELECT CONCAT(first_name,' ',last_name) AS 'Nombre Completo' FROM patients WHERE phone = '123456789';
+
+
+UPDATE patients SET birth_date = '1994-05-15' WHERE first_name = 'John' AND last_name = 'Doe';
+
+SELECT id FROM patients WHERE first_name = 'Mike' AND last_name = 'Brown';
+DELETE FROM patients WHERE id = 3;
