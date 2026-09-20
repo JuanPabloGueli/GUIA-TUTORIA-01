@@ -1,0 +1,110 @@
+medical_clinic_db
+clinic_admin
+SecurePass123 
+
+//////////////////////////////////////////////////////////
+
+-- 1. Tabla de Pacientes
+CREATE TABLE patients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    birthdate DATE NOT NULL,
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    phone VARCHAR(15),
+    email VARCHAR(100) UNIQUE
+);
+
+-- 2. Tabla de Médicos
+CREATE TABLE doctors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    specialty VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    email VARCHAR(100) UNIQUE
+);
+
+-- 3. Tabla de Citas Médicas
+CREATE TABLE appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_date DATETIME NOT NULL,
+    status ENUM('Scheduled', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+);
+
+-- 4. Tabla de Tratamientos
+CREATE TABLE treatments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    diagnosis TEXT NOT NULL,
+    prescription TEXT NOT NULL,
+    treatment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+);
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+SELECT * FROM patients;
+
+SELECT name,specialty FROM doctors;
+
+SELECT 
+    appointments.id,
+    appointments.appointment_date,
+    appointments.status,
+    patients.name AS paciente,
+    doctors.name AS medico 
+FROM appointments 
+INNER JOIN patients ON appointments.patient_id = patients.id 
+INNER JOIN doctors ON appointments.doctor_id = doctors.id  
+WHERE appointments.status = 'Scheduled';
+
+///////////////////// Si quiero usar con alias la tabla /////////////////////////////
+
+SELECT 
+    a.id AS cita_id,
+    a.appointment_date AS fecha,
+    a.status AS estado,
+    p.name AS paciente,
+    d.name AS medico
+FROM appointments a
+INNER JOIN patients p ON a.patient_id = p.id
+INNER JOIN doctors d ON a.doctor_id = d.id
+WHERE a.status = 'Scheduled';
+
+
+SELECT
+    t.treatment_date AS fecha,
+    t.diagnosis AS diagnostico,
+    t.prescription AS prescripcion,
+    d.name AS doctor
+FROM treatments t 
+INNER JOIN doctors d ON t.doctor_id = d.id
+WHERE t.patient_id = 1;
+
+
+SELECT 
+    p.name AS nombre,
+    d.name AS doctor,
+    t.treatment_date AS fecha,
+    t.diagnosis AS diagnostico,
+    t.prescription AS prescripcion
+FROM treatments t
+INNER JOIN patients p ON t.patient_id = p.id
+INNER JOIN doctors d ON t.doctor_id = d.id
+WHERE p.name ='Juan Pérez';
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+UPDATE patients SET phone = '1122334455' WHERE patients.id = 1;
+
+UPDATE appointments SET status = 'Completed' WHERE id =1;
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+DELETE FROM patients WHERE id =2;
+

@@ -11,6 +11,10 @@ Lineas de codigo :
       update = actualizar las referencias a las aplicaciones de linux.
       - y = salta las confimaciones de instalacion
 
+CREA UN ALIAS PARA LA Tabla
+
+    FROM appointments a 
+
 
 --------------------- | INSTALACION  Y CONFIGURACION DE MariaDB  | ---------------------
 
@@ -91,10 +95,10 @@ Para eliminar en cascada hay que modificar la tablas correspondientes de la sigu
 --------------------- | INCIO DE SESION | ---------------------
 
 
-    1 ) sudo service mariadb start / stop
-    2 ) sudo mariadb
-    3 ) mysql -u bookstore_user -p      
-    4 ) 12345 / Patients123!
+    1 ) sudo service mariadb start / stop / status
+    2 ) mysql -u bookstore_user -p 
+    3 ) 12345 / Patients123!    
+    4 ) sudo mariadb
 
 
 --------------------- | CONEVENCIONES DE ESCRITURA | ---------------------
@@ -108,4 +112,5 @@ Para eliminar en cascada hay que modificar la tablas correspondientes de la sigu
 
 SELECT User, Host FROM mysql.user;
 SHOW GRANTS FOR 'nombre_usuario'@'localhost';
+
 
