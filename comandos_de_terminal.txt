@@ -1,45 +1,96 @@
-## 1. Actualizar e instalar MariaDB de forma no interactiva
-sudo apt update
-sudo apt install mariadb-server -y
+--------------------- | ANOTACIONES | ---------------------
 
 
-## 2. Iniciar el servicio de base de datos
-sudo service mariadb start
+Fork = crea una copia del repositorio el cual nos permite luego usarlo para codespaces
 
-## Si quieres definir una contraseña y limpiar usuarios de prueba, ejecuta:
+Codespaces = servidor remoto
 
-#sudo mysql_secure_installation
-
-## Tip: Para un entorno de desarrollo rápido, puedes saltarte esto y entrar directamente como root (sudo).
-sudo mariadb
-
-
-Comandos SQL de la guía 01:
-
---No son necesarios la primera vez.
-REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'bookstore_user'@'localhost';​
-DROP USER IF EXISTS 'bookstore_user'@'localhost';​
-DROP DATABASE IF EXISTS bookstoredb;​
-FLUSH PRIVILEGES;
-
---A partir de acá, sí:
---Crea una base de datos llamada bookstoredb con el cotejamiento utf8_unicode_ci.
-CREATE DATABASE bookstoredb CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+Lineas de codigo : 
+      sudo = "Admin" ya que en linux  no hay admin. 
+      apt = comando para instalar paquetes , base de datos, etc. 
+      update = actualizar las referencias a las aplicaciones de linux.
+      - y = salta las confimaciones de instalacion
 
 
---Ahora creamos un usuario llamado bookstore_user con la contraseña 12345 (a los fines prácticos usamos una contraseña insegura y fácil de recordar):
-CREATE USER 'bookstore_user'@'localhost' IDENTIFIED BY '12345';
+--------------------- | INSTALACION  Y CONFIGURACION DE MariaDB  | ---------------------
 
---Otorgamos todos los permisos sobre la base de datos bookstoredb al usuario bookstore_user:
-GRANT ALL PRIVILEGES ON bookstoredb.* TO 'bookstore_user'@'localhost';
-
---Para que los cambios surtan efecto, ejecutamos:
-FLUSH PRIVILEGES;
+ 
+ 1. Actualizar e instalar MariaDB de forma no interactiva
+    sudo apt update
+    sudo apt install mariadb-server -y
 
 
---Podemos verificar qué permisos tiene bookstore_user con:
---SHOW GRANTS FOR 'bookstore_user'@'localhost';
+ 2. Iniciar el servicio de base de datos
+    sudo service mariadb start
+
+Definir una contraseña y limpiar usuarios de prueba, ejecutar
+
+    sudo mysql_secure_installation
+
+Tip: Para un entorno de desarrollo rápido, puedes saltarte esto y entrar directamente como root (sudo).
+
+    sudo mariadb
+
+Dentro de MariaDB (  MariaDB [(none)]> ) se puede:
+
+    ● Ver bases de datos: SHOW DATABASES; 
+    ● Crear una nueva: CREATE DATABASE mi_proyecto; 
+    ● Usar la base de datos: USE mi_proyecto; 
+    ● Salir: exit; 
+
+Para volver a estado cero si existiesen usuarios y base de datos creadas previamente con el mismo nombre 
+    REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'bookstore_user'@'localhost'; 
+    DROP USER IF EXISTS 'bookstore_user'@'localhost'; 
+    DROP DATABASE IF EXISTS bookstoredb; 
+    FLUSH PRIVILEGES; 
+
+
+--------------------- | EJEMPLO | ---------------------
+
+
+(EJECUTAR COMO ROOT) 
+Crea una base de datos llamada bookstoredb con el cotejamiento utf8_unicode_ci. 
+
+    CREATE DATABASE bookstoredb CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+
+(EJECUTAR COMO ROOT) 
+Crea un usuario llamado "bookstore_user" con la contraseña 12345
+
+    CREATE USER 'bookstore_user'@'localhost' IDENTIFIED BY '12345';
+
+(EJECUTAR COMO ROOT)
+Otorgar todos los permisos sobre la base de datos "bookstoredb" al usuario "bookstore_user"
+
+    GRANT ALL PRIVILEGES ON bookstoredb.* TO 'bookstore_user'@'localhost';
+
+Para que los cambios surtan efecto, ejecutar
+
+    FLUSH PRIVILEGES;
+
+Se puede verificar qué permisos tiene "bookstore_user" con
+
+    SHOW GRANTS FOR 'bookstore_user'@'localhost';
 
 --Esto mostrará algo como:
 --GRANT ALL PRIVILEGES ON `bookstoredb`.* TO 'bookstore_user'@'localhost'
 
+Para eliminar en cascada hay que modificar la tablas correspondientes de la siguiente forma 
+
+    ALTER TABLE `Orders`     
+    DROP FOREIGN KEY `Orders_ibfk_1`,
+    
+    ADD FOREIGN KEY (`customer_id`) REFERENCES `Customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+
+    ALTER TABLE `Order_Items`
+    DROP FOREIGN KEY `Order_Items_ibfk_1`,
+    ADD FOREIGN KEY (`order_id`) REFERENCES `Orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+
+    Nota: ibfk = InnoDB Foreign Key. Es una convención de nomenclatura. 
+    
+--------------------- | INCIO DE SESION | ---------------------
+
+
+    1 ) sudo service mariadb start / stop
+    2 ) mysql -u bookstore_user -p 
+    3 ) 12345
