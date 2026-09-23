@@ -1,0 +1,87 @@
+CREATE DATABASE sales_system_db CHARACTER SET utf8mb4;
+sales_admin'@'localhost
+GRANT ALL PRIVILEGES ON sales_system_db.* TO 'sales_admin'@'localhost';
+
+-- 1. Tabla de Clientes
+CREATE TABLE customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 2. Tabla de Productos
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    stock INT NOT NULL DEFAULT 0
+);
+
+-- 3. Tabla de Órdenes
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    order_date DATE NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- 4. Tabla de Detalles/Ítems de Órdenes
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id),
+    CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- 1. Insertar Clientes
+INSERT INTO customers (first_name, last_name, email) VALUES
+('Ana', 'Gómez', 'ana.gomez@example.com'),
+('Luis', 'Pérez', 'luis.perez@example.com'),
+('Carla', 'Rodríguez', 'carla.rodriguez@example.com'),
+('Arena', 'Calienes', 'acalienes@fi.edu.ar');
+
+-- 2. Insertar Productos
+INSERT INTO products (name, price, stock) VALUES
+('Laptop', 1200.00, 5),
+('Mouse', 25.00, 50),
+('Keyboard', 45.00, 30),
+('Monitor', 300.00, 10);
+
+-- 3. Insertar Órdenes
+INSERT INTO orders (customer_id, order_date, total) VALUES
+(1, '2025-03-01', 1270.00),
+(2, '2025-03-02', 70.00),
+(1, '2025-03-03', 1345.00),
+(3, '2025-03-03', 345.00),
+(2, '2025-03-03', 370.00);
+
+-- 4. Insertar Detalle de Órdenes (order_items)
+-- Orden 1  (Ana Gómez): 1 Laptop ($1200.00), 2 Mouse ($25.00)
+
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(1, 1, 1, 1200.00),
+(1, 2, 2, 25.00);
+
+-- Orden 2 (Luis Pérez): 2 Mouse ($25.00), 1 Keyboard ($20.00)
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(2, 2, 2, 25.00),
+(2, 3, 1, 20.00);
+
+-- Orden 3 (Ana Gómez): 1 Laptop ($1200.00), 1 Keyboard ($45.00)
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(3, 1, 1, 1200.00),
+(3, 3, 1, 45.00);
+
+-- Orden 4 (Carla Rodríguez): 1 Monitor ($300.00)
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(4, 4, 1, 300.00);
+
+-- Orden 5 (Luis Pérez): 1 Monitor ($300.00), 2 Mouse ($35.00)
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(5, 4, 1, 300.00),
+(5, 2, 2, 35.00);
