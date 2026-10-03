@@ -83,7 +83,6 @@ Para eliminar en cascada hay que modificar la tablas correspondientes de la sigu
 
     ALTER TABLE `Orders`     
     DROP FOREIGN KEY `Orders_ibfk_1`,
-    
     ADD FOREIGN KEY (`customer_id`) REFERENCES `Customers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
 
     ALTER TABLE `Order_Items`
@@ -97,7 +96,7 @@ Para eliminar en cascada hay que modificar la tablas correspondientes de la sigu
 
     1 ) sudo service mariadb start / stop / status
     2 ) mysql -u bookstore_user -p 
-    3 ) 12345 / Patients123!    
+    3 ) 12345    
     4 ) sudo mariadb
 
 

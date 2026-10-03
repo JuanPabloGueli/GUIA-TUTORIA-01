@@ -1,5 +1,5 @@
 CREATE DATABASE sales_system_db CHARACTER SET utf8mb4;
-sales_admin'@'localhost
+CREATE USER 'sales_admin'@'localhost' IDENTIFIED BY 'SalesPass123!';   
 GRANT ALL PRIVILEGES ON sales_system_db.* TO 'sales_admin'@'localhost';
 
 -- 1. Tabla de Clientes
@@ -13,7 +13,7 @@ CREATE TABLE customers (
 -- 2. Tabla de Productos
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL
     price DECIMAL(10,2) NOT NULL,
     stock INT NOT NULL DEFAULT 0
 );
@@ -24,7 +24,7 @@ CREATE TABLE orders (
     customer_id INT NOT NULL,
     order_date DATE NOT NULL,
     total DECIMAL(10,2) NOT NULL,
-    CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
 -- 4. Tabla de Detalles/Ítems de Órdenes
@@ -34,8 +34,8 @@ CREATE TABLE order_items (
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
-    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id),
-    CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 -- 1. Insertar Clientes
@@ -85,3 +85,20 @@ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
 (5, 4, 1, 300.00),
 (5, 2, 2, 35.00);
+
+---------------------------------- CONSULTAS -----------------------------------------------
+
+SELECT SUM(stock) FROM products;
+
+// GROUP BY para mostrar todos y no uno solo
+SELECT CONCAT(c.first_name, ' ', c.last_name) AS full_name, COUNT(o.id) AS total_orders FROM customers c LEFT JOIN orders o ON c.id = o.customer_id GROUP BY c.id, c.first_name, c.last_name;
+
+SELECT AVG(total) FROM orders;
+
+SELECT name AS Producto FROM products p WHERE (p.stock BETWEEN 5 AND 30) OR (p.price > 1000);
+
+SELECT p.name AS Producto, SUM(oi.quantity) AS TotalUnidades, SUM(oi.price * oi.quantity) AS TotalRecaudado FROM products p INNER JOIN order_items oi ON p.id = oi.product_id  WHERE oi.quantity > 0 GROUP BY p.name;
+
+
+// No se usa WHERE porque no puede evaluar funciones de agregación como COUNT()
+SELECT o.order_date AS Fecha, COUNT(*) AS Cantidad  FROM orders o GROUP BY o.order_date HAVING COUNT(*) > 0;
