@@ -91,18 +91,17 @@ CREATE PROCEDURE sp_get_user_credentials(IN username VARCHAR(100))
     BEGIN
     SELECT id, password_hash FROM users u WHERE u.username = username;
     END $$
-DELIMITER;
+DELIMITER ;
 
 CALL sp_get_user_credentials('admin_user');
 
 
 DELIMITER $$
 
-CREATE FUNCTION fn_has_role(
-    p_user_id INT,
-    p_role_name VARCHAR(50)
-)
+CREATE FUNCTION fn_has_role( p_user_id INT, p_role_name VARCHAR(50))
+
 RETURNS TINYINT(1)
+
 DETERMINISTIC
 BEGIN
     RETURN EXISTS(
@@ -114,3 +113,115 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+------------------------------ HANDLER FOR SQLEXCEPTION ------------------------------
+
+DELIMITER $$
+CREATE PROCEDURE sp_upload_document (IN p_owner_id INT, IN p_displayname VARCHAR(255), IN p_filepath VARCHAR(255),  OUT p_message VARCHAR(255))
+
+BEGIN
+
+DECLARE id_doc INT;
+
+-- Si ocurre cualquier SQLEXCEPTION, se ejecuta este bloque de rescate: 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+        BEGIN 
+            ROLLBACK; 
+            SET p_message = 'ERROR_SQL: Operación cancelada. Cambio revertido mediante ROLLBACK.'; 
+        END; 
+
+-- Valida si el usuario es 'professor' o 'admin'
+  IF fn_has_role(p_owner_id, 'professor') = 1  OR fn_has_role(p_owner_id, 'admin') = 1 THEN
+    START TRANSACTION;
+
+    INSERT INTO documents (owner_id,displayname,filepath, created_at) VALUES (p_owner_id, p_displayname, p_filepath, NOW());
+    SET id_doc = LAST_INSERT_ID();
+
+    INSERT INTO log (user_id,document_id,action) VALUES (p_owner_id,id_doc,'UPLOAD');
+
+    COMMIT;
+    SET p_message = 'Documento cargado exitosamente.';
+  ELSE
+    ROLLBACK; 
+    SET p_message = 'ERROR: El usuario no administrador o profesor.'; 
+ END IF; 
+ 
+END$$ 
+DELIMITER ;
+
+--------------------------------------------------------------
+
+DELIMITER $$
+CREATE PROCEDURE sp_register_download (IN user_id INT, IN document_id INT)
+BEGIN
+    INSERT INTO log (user_id, document_id, action)
+    VALUES (user_id, document_id, 'DOWNLOAD');
+
+END$$
+DELIMITER ;
+
+--------------------------------------------------------------
+
+DELIMITER $$
+CREATE PROCEDURE sp_soft_delete_user (IN p_user_id INT,OUT p_message VARCHAR(100))
+
+BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+        BEGIN 
+            ROLLBACK; 
+            SET p_message = 'ERROR_SQL: Operacion cancelada. Cambio revertido mediante ROLLBACK.'; 
+        END; 
+
+    START TRANSACTION;
+
+    UPDATE users SET is_active = 0 WHERE p_user_id = id;
+    UPDATE documents SET is_deleted = 1, deleted_at = NOW() WHERE p_user_id = owner_id;
+    INSERT INTO log (user_id,document_id,action,created_at) VALUES (p_user_id, NULL ,'SOFT_DELETE',NOW());
+    COMMIT;
+    SET p_message = 'Usuario y documentos asociados dados de baja lógicamente.';
+
+END$$
+DELIMITER ;
+
+
+---------------------------------------- VIEWS ----------------------------------------
+
+Para ver VIEWS creadas ---> SHOW FULL TABLES WHERE Table_type = 'VIEW';
+Para eliminar VIEWS ---> DROP VIEW nombre_de_la_vista;
+
+CREATE VIEW v_active_documents AS 
+    SELECT 
+    d.id AS ID_documento, 
+    d.displayname AS Nombre_documento, 
+    d.filepath AS Ruta, 
+    d.created_at AS Creado_el ,
+    u.username AS Nombre 
+    FROM documents d
+    INNER JOIN users u ON owner_id = u.id 
+    WHERE d.is_deleted = 0;
+
+
+CREATE VIEW  v_teachers_multiple_uploads AS
+    SELECT 
+    u.username AS Nombre,
+    u.email AS Mail
+    FROM users u
+    INNER JOIN users_roles ur ON u.id = ur.user_id
+    INNER JOIN roles r ON ur.role_id = r.id
+    INNER JOIN documents d ON u.id = d.owner_id
+    WHERE r.name = 'professor' AND d.is_deleted = 0
+    GROUP BY u.id, u.username
+    HAVING COUNT(d.id) > 1;
+
+CREATE VIEW v_popular_documents AS
+    SELECT
+    d.displayname AS Nombre,
+    COUNT(l.id) AS Total_Descargas
+    FROM documents d
+    INNER JOIN log l ON l.document_id = d.id
+    WHERE l.action = 'DOWNLOAD' AND d.is_deleted = 0
+    GROUP BY d.displayname
+    HAVING COUNT(l.id) > 2;
+
+
